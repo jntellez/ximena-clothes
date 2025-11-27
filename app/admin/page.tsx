@@ -18,6 +18,9 @@ interface ProductForm {
   category: string
   description: string
   inStock: boolean
+  sizes: string[]
+  colors: string[]
+  image: string
 }
 
 const API_URL = "http://localhost:3001/api"
@@ -35,6 +38,9 @@ export default function AdminPage() {
     category: "dresses",
     description: "",
     inStock: true,
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["Black", "White"],
+    image: "/placeholder.svg",
   })
 
   // Fetch products
@@ -76,6 +82,9 @@ export default function AdminPage() {
       category: "dresses",
       description: "",
       inStock: true,
+      sizes: ["XS", "S", "M", "L", "XL"],
+      colors: ["Black", "White"],
+      image: "/placeholder.svg",
     })
     setEditingId(null)
     setShowForm(true)
@@ -84,13 +93,17 @@ export default function AdminPage() {
   const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Enviar solo los campos necesarios según la API
     const productData = {
-      ...formData,
-      sizes: ["XS", "S", "M", "L", "XL"],
-      colors: ["Black", "White"],
-      image: "/placeholder.svg",
-      rating: 4.5,
-      reviews: 0,
+      name: formData.name,
+      price: formData.price,
+      originalPrice: formData.originalPrice || null,
+      image: formData.image,
+      category: formData.category,
+      description: formData.description,
+      inStock: formData.inStock,
+      sizes: formData.sizes,
+      colors: formData.colors,
     }
 
     try {
@@ -106,7 +119,10 @@ export default function AdminPage() {
           body: JSON.stringify(productData),
         })
 
-        if (!res.ok) throw new Error("Failed to update product")
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error || "Failed to update product")
+        }
         alert("Producto actualizado exitosamente")
       } else {
         // CREATE
@@ -118,7 +134,10 @@ export default function AdminPage() {
           body: JSON.stringify(productData),
         })
 
-        if (!res.ok) throw new Error("Failed to create product")
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error || "Failed to create product")
+        }
         alert("Producto creado exitosamente")
       }
 
@@ -126,7 +145,7 @@ export default function AdminPage() {
       fetchProducts() // Reload products
     } catch (error) {
       console.error("Error saving product:", error)
-      alert("Error al guardar el producto")
+      alert(`Error al guardar el producto: ${error instanceof Error ? error.message : "Error desconocido"}`)
     } finally {
       setLoading(false)
     }
@@ -254,6 +273,7 @@ export default function AdminPage() {
                     <label className="block text-sm font-medium text-foreground mb-2">Precio</label>
                     <input
                       type="number"
+                      step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) })}
                       className="w-full rounded-lg border border-border bg-background px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
@@ -265,6 +285,7 @@ export default function AdminPage() {
                     <label className="block text-sm font-medium text-foreground mb-2">Precio Original (Opcional)</label>
                     <input
                       type="number"
+                      step="0.01"
                       value={formData.originalPrice || ""}
                       onChange={(e) =>
                         setFormData({
@@ -273,6 +294,18 @@ export default function AdminPage() {
                         })
                       }
                       className="w-full rounded-lg border border-border bg-background px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">URL de Imagen</label>
+                    <input
+                      type="text"
+                      value={formData.image}
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
+                      placeholder="https://url-de-tu-imagen.com/foto.jpg"
+                      required
                     />
                   </div>
                 </div>
@@ -286,6 +319,40 @@ export default function AdminPage() {
                     rows={4}
                     required
                   />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Tallas (separadas por coma)</label>
+                    <input
+                      type="text"
+                      value={formData.sizes.join(", ")}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          sizes: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                        })
+                      }
+                      className="w-full rounded-lg border border-border bg-background px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
+                      placeholder="XS, S, M, L, XL"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Colores (separados por coma)</label>
+                    <input
+                      type="text"
+                      value={formData.colors.join(", ")}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          colors: e.target.value.split(",").map((c) => c.trim()).filter(Boolean),
+                        })
+                      }
+                      className="w-full rounded-lg border border-border bg-background px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
+                      placeholder="Rojo, Azul, Negro"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -360,6 +427,9 @@ export default function AdminPage() {
                               category: product.category,
                               description: product.description,
                               inStock: product.inStock,
+                              sizes: product.sizes || ["XS", "S", "M", "L", "XL"],
+                              colors: product.colors || ["Black", "White"],
+                              image: product.image || "/placeholder.svg",
                             })
                             setShowForm(true)
                           }}

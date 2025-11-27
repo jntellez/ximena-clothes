@@ -1,28 +1,95 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
-import { products } from "@/lib/mock-data"
+import { Product } from "@/lib/mock-data"
 import { useCart } from "@/lib/cart-context"
 import { Star, ShoppingBag, Heart } from "lucide-react"
+
+const API_URL = "http://localhost:3001/api"
 
 export default function ProductPage() {
   const params = useParams()
   const productId = params.id as string
-  const product = products.find((p) => p.id === productId)
   const { addToCart } = useCart()
-  const [selectedSize, setSelectedSize] = useState(product?.sizes[0] || "")
-  const [selectedColor, setSelectedColor] = useState(product?.colors[0] || "")
+
+  const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedSize, setSelectedSize] = useState("")
+  const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
 
+  // Fetch product by ID
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`${API_URL}/products/${productId}`)
+        if (!res.ok) throw new Error("Failed to fetch product")
+        const data = await res.json()
+        setProduct(data)
+        setSelectedSize(data.sizes?.[0] || "")
+        setSelectedColor(data.colors?.[0] || "")
+      } catch (error) {
+        console.error("Error fetching product:", error)
+        setProduct(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProduct()
+  }, [productId])
+
+  // Fetch related products
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      if (!product) return
+
+      try {
+        const res = await fetch(`${API_URL}/products`)
+        if (!res.ok) throw new Error("Failed to fetch products")
+        const data = await res.json()
+        const related = data
+          .filter((p: Product) => p.category === product.category && p.id !== product.id)
+          .slice(0, 4)
+        setRelatedProducts(related)
+      } catch (error) {
+        console.error("Error fetching related products:", error)
+      }
+    }
+
+    fetchRelatedProducts()
+  }, [product])
+
+  const handleAddToCart = () => {
+    if (!product) return
+    addToCart(product, quantity, selectedSize, selectedColor)
+    setAddedToCart(true)
+    setTimeout(() => setAddedToCart(false), 2000)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex items-center justify-center py-32">
+          <p className="text-xl text-muted-foreground">Cargando producto...</p>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   if (!product) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex items-center justify-center py-32">
           <p className="text-xl text-muted-foreground">Producto no encontrado</p>
@@ -30,14 +97,6 @@ export default function ProductPage() {
         <Footer />
       </div>
     )
-  }
-
-  const relatedProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
-
-  const handleAddToCart = () => {
-    addToCart(product, quantity, selectedSize, selectedColor)
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
   }
 
   return (
@@ -60,7 +119,9 @@ export default function ProductPage() {
             {/* Details */}
             <div className="space-y-8">
               <div>
-                <p className="text-sm font-medium text-accent mb-2">{product.category.toUpperCase()}</p>
+                <p className="text-sm font-medium text-accent mb-2">
+                  {product.category?.toUpperCase() || "PRODUCTO"}
+                </p>
                 <h1 className="text-4xl font-bold text-foreground mb-4">{product.name}</h1>
 
                 {/* Rating */}
@@ -69,13 +130,12 @@ export default function ProductPage() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-5 w-5 ${
-                          i < Math.floor(product.rating) ? "fill-accent text-accent" : "text-muted"
-                        }`}
+                        className={`h-5 w-5 ${i < Math.floor(product.rating || 0) ? "fill-accent text-accent" : "text-muted"
+                          }`}
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-muted-foreground">({product.reviews} reseñas)</span>
+                  <span className="text-sm text-muted-foreground">({product.reviews || 0} reseñas)</span>
                 </div>
 
                 {/* Price */}
@@ -93,44 +153,46 @@ export default function ProductPage() {
               {/* Options */}
               <div className="space-y-6">
                 {/* Size */}
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-3">Talla</label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-3 rounded-lg border-2 transition-all font-medium ${
-                          selectedSize === size
+                {product.sizes && product.sizes.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">Talla</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {product.sizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`py-3 rounded-lg border-2 transition-all font-medium ${selectedSize === size
                             ? "border-accent bg-accent text-accent-foreground"
                             : "border-border hover:border-accent"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                            }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Color */}
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-3">Color</label>
-                  <div className="flex gap-3">
-                    {product.colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`px-6 py-3 rounded-lg border-2 transition-all font-medium text-sm ${
-                          selectedColor === color
+                {product.colors && product.colors.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">Color</label>
+                    <div className="flex gap-3">
+                      {product.colors.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setSelectedColor(color)}
+                          className={`px-6 py-3 rounded-lg border-2 transition-all font-medium text-sm ${selectedColor === color
                             ? "border-accent bg-accent text-accent-foreground"
                             : "border-border hover:border-accent"
-                        }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
+                            }`}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Quantity */}
                 <div>

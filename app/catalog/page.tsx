@@ -1,16 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
-import { products, categories } from "@/lib/mock-data"
+import { Product, Category } from "@/lib/mock-data"
 import { ChevronDown } from "lucide-react"
 
+const API_URL = "http://localhost:3001/api"
+
 export default function CatalogPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("")
   const [sortBy, setSortBy] = useState("featured")
   const [priceRange, setPriceRange] = useState([0, 500])
+
+  // Fetch products and categories
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch(`${API_URL}/products`),
+          fetch(`${API_URL}/categories`)
+        ])
+
+        if (!productsRes.ok || !categoriesRes.ok) {
+          throw new Error("Failed to fetch data")
+        }
+
+        const [productsData, categoriesData] = await Promise.all([
+          productsRes.json(),
+          categoriesRes.json()
+        ])
+
+        setProducts(productsData)
+        setCategories(categoriesData)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        alert("Error al cargar los productos")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const filteredProducts = products.filter((product) => {
     const categoryMatch = !selectedCategory || product.category === selectedCategory
@@ -25,7 +62,7 @@ export default function CatalogPage() {
       case "price-high":
         return b.price - a.price
       case "rating":
-        return b.rating - a.rating
+        return (b.rating || 0) - (a.rating || 0)
       default:
         return 0
     }
@@ -42,92 +79,96 @@ export default function CatalogPage() {
             <p className="mt-2 text-muted-foreground">Explora nuestra cuidada selección de piezas de moda premium.</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-4">
-            {/* Filters */}
-            <aside className="space-y-6">
-              {/* Category Filter */}
-              <div>
-                <h3 className="mb-3 font-semibold text-foreground">Categoría</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setSelectedCategory("")}
-                    className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      !selectedCategory
-                        ? "bg-accent text-accent-foreground font-medium"
-                        : "hover:bg-muted text-foreground"
-                    }`}
-                  >
-                    Todos los Artículos
-                  </button>
-                  {categories.map((cat) => (
+          {loading ? (
+            <div className="flex items-center justify-center py-32">
+              <p className="text-xl text-muted-foreground">Cargando productos...</p>
+            </div>
+          ) : (
+            <div className="grid gap-8 md:grid-cols-4">
+              {/* Filters */}
+              <aside className="space-y-6">
+                {/* Category Filter */}
+                <div>
+                  <h3 className="mb-3 font-semibold text-foreground">Categoría</h3>
+                  <div className="space-y-2">
                     <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.slug)}
-                      className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        selectedCategory === cat.slug
+                      onClick={() => setSelectedCategory("")}
+                      className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${!selectedCategory
                           ? "bg-accent text-accent-foreground font-medium"
                           : "hover:bg-muted text-foreground"
-                      }`}
+                        }`}
                     >
-                      {cat.name}
+                      Todos los Artículos
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Filter */}
-              <div>
-                <h3 className="mb-3 font-semibold text-foreground">Rango de Precio</h3>
-                <div className="space-y-3">
-                  <input
-                    type="range"
-                    min="0"
-                    max="500"
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([priceRange[0], Number.parseInt(e.target.value)])}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">
-                    ${priceRange[0]} - ${priceRange[1]}
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.slug)}
+                        className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === cat.slug
+                            ? "bg-accent text-accent-foreground font-medium"
+                            : "hover:bg-muted text-foreground"
+                          }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </aside>
 
-            {/* Products Grid */}
-            <div className="md:col-span-3">
-              {/* Sort */}
-              <div className="mb-6 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{sortedProducts.length} productos</p>
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none rounded-lg border border-border bg-background px-4 py-2 pr-10 text-foreground cursor-pointer"
-                  >
-                    <option value="featured">Destacado</option>
-                    <option value="price-low">Precio: Menor a Mayor</option>
-                    <option value="price-high">Precio: Mayor a Menor</option>
-                    <option value="rating">Mejor Calificado</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                {/* Price Filter */}
+                <div>
+                  <h3 className="mb-3 font-semibold text-foreground">Rango de Precio</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="range"
+                      min="0"
+                      max="500"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number.parseInt(e.target.value)])}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-muted-foreground">
+                      ${priceRange[0]} - ${priceRange[1]}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </aside>
 
-              {/* Products */}
-              {sortedProducts.length > 0 ? (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {sortedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
+              {/* Products Grid */}
+              <div className="md:col-span-3">
+                {/* Sort */}
+                <div className="mb-6 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">{sortedProducts.length} productos</p>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="appearance-none rounded-lg border border-border bg-background px-4 py-2 pr-10 text-foreground cursor-pointer"
+                    >
+                      <option value="featured">Destacado</option>
+                      <option value="price-low">Precio: Menor a Mayor</option>
+                      <option value="price-high">Precio: Mayor a Menor</option>
+                      <option value="rating">Mejor Calificado</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  </div>
                 </div>
-              ) : (
-                <div className="rounded-lg border border-border bg-card p-12 text-center">
-                  <p className="text-muted-foreground">No se encontraron productos en este rango.</p>
-                </div>
-              )}
+
+                {/* Products */}
+                {sortedProducts.length > 0 ? (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {sortedProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-border bg-card p-12 text-center">
+                    <p className="text-muted-foreground">No se encontraron productos en este rango.</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 
