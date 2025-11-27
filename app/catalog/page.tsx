@@ -38,10 +38,8 @@ export default function CatalogPage() {
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-12">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground">Our Collection</h1>
-            <p className="mt-2 text-muted-foreground">
-              Explore our carefully curated selection of premium fashion pieces.
-            </p>
+            <h1 className="text-4xl font-bold text-foreground">Nuestra Colección</h1>
+            <p className="mt-2 text-muted-foreground">Explora nuestra cuidada selección de piezas de moda premium.</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-4">
@@ -49,7 +47,7 @@ export default function CatalogPage() {
             <aside className="space-y-6">
               {/* Category Filter */}
               <div>
-                <h3 className="mb-3 font-semibold text-foreground">Category</h3>
+                <h3 className="mb-3 font-semibold text-foreground">Categoría</h3>
                 <div className="space-y-2">
                   <button
                     onClick={() => setSelectedCategory("")}
@@ -59,7 +57,7 @@ export default function CatalogPage() {
                         : "hover:bg-muted text-foreground"
                     }`}
                   >
-                    All Items
+                    Todos los Artículos
                   </button>
                   {categories.map((cat) => (
                     <button
@@ -79,7 +77,7 @@ export default function CatalogPage() {
 
               {/* Price Filter */}
               <div>
-                <h3 className="mb-3 font-semibold text-foreground">Price Range</h3>
+                <h3 className="mb-3 font-semibold text-foreground">Rango de Precio</h3>
                 <div className="space-y-3">
                   <input
                     type="range"
@@ -100,17 +98,17 @@ export default function CatalogPage() {
             <div className="md:col-span-3">
               {/* Sort */}
               <div className="mb-6 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{sortedProducts.length} products</p>
+                <p className="text-sm text-muted-foreground">{sortedProducts.length} productos</p>
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="appearance-none rounded-lg border border-border bg-background px-4 py-2 pr-10 text-foreground cursor-pointer"
                   >
-                    <option value="featured">Featured</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="rating">Highest Rated</option>
+                    <option value="featured">Destacado</option>
+                    <option value="price-low">Precio: Menor a Mayor</option>
+                    <option value="price-high">Precio: Mayor a Menor</option>
+                    <option value="rating">Mejor Calificado</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 </div>
@@ -125,7 +123,7 @@ export default function CatalogPage() {
                 </div>
               ) : (
                 <div className="rounded-lg border border-border bg-card p-12 text-center">
-                  <p className="text-muted-foreground">No products found in this range.</p>
+                  <p className="text-muted-foreground">No se encontraron productos en este rango.</p>
                 </div>
               )}
             </div>

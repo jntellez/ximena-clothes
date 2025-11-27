@@ -25,7 +25,7 @@ export default function ProductPage() {
       <div className="min-h-screen">
         <Navbar />
         <div className="flex items-center justify-center py-32">
-          <p className="text-xl text-muted-foreground">Product not found</p>
+          <p className="text-xl text-muted-foreground">Producto no encontrado</p>
         </div>
         <Footer />
       </div>
@@ -75,7 +75,7 @@ export default function ProductPage() {
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-muted-foreground">({product.reviews} reviews)</span>
+                  <span className="text-sm text-muted-foreground">({product.reviews} reseñas)</span>
                 </div>
 
                 {/* Price */}
@@ -94,7 +94,7 @@ export default function ProductPage() {
               <div className="space-y-6">
                 {/* Size */}
                 <div>
-                  <label className="block text-sm font-semibold text-foreground mb-3">Size</label>
+                  <label className="block text-sm font-semibold text-foreground mb-3">Talla</label>
                   <div className="grid grid-cols-5 gap-2">
                     {product.sizes.map((size) => (
                       <button
@@ -134,7 +134,7 @@ export default function ProductPage() {
 
                 {/* Quantity */}
                 <div>
-                  <label className="block text-sm font-semibold text-foreground mb-3">Quantity</label>
+                  <label className="block text-sm font-semibold text-foreground mb-3">Cantidad</label>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -161,21 +161,21 @@ export default function ProductPage() {
                   className="flex-1 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground py-6 text-base"
                 >
                   <ShoppingBag className="h-5 w-5" />
-                  {addedToCart ? "Added to Cart!" : "Add to Cart"}
+                  {addedToCart ? "¡Añadido al Carrito!" : "Añadir al Carrito"}
                 </Button>
                 <Button variant="outline" size="lg" className="px-6 bg-transparent">
                   <Heart className="h-5 w-5" />
                 </Button>
               </div>
 
-              {!product.inStock && <p className="text-red-600 font-semibold">Out of Stock</p>}
+              {!product.inStock && <p className="text-red-600 font-semibold">Agotado</p>}
             </div>
           </div>
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
             <section className="space-y-8">
-              <h2 className="text-3xl font-bold text-foreground">Related Products</h2>
+              <h2 className="text-3xl font-bold text-foreground">Productos Relacionados</h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {relatedProducts.map((p) => (
                   <ProductCard key={p.id} product={p} />

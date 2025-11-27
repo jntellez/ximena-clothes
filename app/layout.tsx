@@ -9,8 +9,8 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Ximena Clothes - Premium Fashion",
-  description: "Discover elegant and sustainable fashion at Ximena Clothes",
+  title: "Ximena Ropa - Moda Premium",
+  description: "Descubre ropa elegante y sostenible en Ximena Ropa",
   generator: "v0.app",
   icons: {
     icon: [
@@ -37,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`font-sans antialiased`}>
         <CartProvider>{children}</CartProvider>
         <Analytics />

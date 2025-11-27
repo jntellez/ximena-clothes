@@ -11,31 +11,31 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold">XIMENA</h3>
-            <p className="text-sm opacity-75">Discover premium, sustainable fashion for the modern woman.</p>
+            <p className="text-sm opacity-75">Descubre moda premium y sostenible para la mujer moderna.</p>
           </div>
 
           {/* Shop */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Shop</h4>
+            <h4 className="font-semibold">Tienda</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/catalog?category=dresses" className="hover:underline">
-                  Dresses
+                  Vestidos
                 </Link>
               </li>
               <li>
                 <Link href="/catalog?category=tops" className="hover:underline">
-                  Tops
+                  Blusas
                 </Link>
               </li>
               <li>
                 <Link href="/catalog?category=bottoms" className="hover:underline">
-                  Bottoms
+                  Pantalones
                 </Link>
               </li>
               <li>
                 <Link href="/catalog?category=outerwear" className="hover:underline">
-                  Outerwear
+                  Abrigos
                 </Link>
               </li>
             </ul>
@@ -43,26 +43,26 @@ export function Footer() {
 
           {/* Support */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Support</h4>
+            <h4 className="font-semibold">Soporte</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/about" className="hover:underline">
-                  About Us
+                  Acerca de Nosotros
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="hover:underline">
-                  Contact
+                  Contacto
                 </Link>
               </li>
               <li>
                 <Link href="/" className="hover:underline">
-                  Shipping & Returns
+                  Envíos y Devoluciones
                 </Link>
               </li>
               <li>
                 <Link href="/" className="hover:underline">
-                  FAQs
+                  Preguntas Frecuentes
                 </Link>
               </li>
             </ul>
@@ -70,7 +70,7 @@ export function Footer() {
 
           {/* Contact */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Contact</h4>
+            <h4 className="font-semibold">Contacto</h4>
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
@@ -91,7 +91,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-secondary-foreground/20 pt-8 text-center text-sm opacity-75">
-          <p>&copy; {currentYear} Ximena Clothes. All rights reserved.</p>
+          <p>&copy; {currentYear} Ximena Ropa. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

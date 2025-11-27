@@ -18,10 +18,10 @@ export function Navbar() {
   }
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/catalog", label: "Shop" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+    { href: "/", label: "Inicio" },
+    { href: "/catalog", label: "Tienda" },
+    { href: "/about", label: "Acerca de" },
+    { href: "/contact", label: "Contacto" },
     { href: "/admin", label: "Admin" },
   ]
 

@@ -17,11 +17,11 @@ export default function CartPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-6">
-            <h1 className="text-3xl font-bold text-foreground">Your Cart is Empty</h1>
-            <p className="text-muted-foreground">Add some beautiful pieces from our collection to get started.</p>
+            <h1 className="text-3xl font-bold text-foreground">Tu Carrito está Vacío</h1>
+            <p className="text-muted-foreground">Agrega algunas piezas hermosas de nuestra colección para comenzar.</p>
             <Link href="/catalog">
               <Button className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
-                Continue Shopping
+                Continuar Comprando
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
@@ -38,7 +38,7 @@ export default function CartPage() {
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-12">
-          <h1 className="text-4xl font-bold text-foreground mb-12">Shopping Cart</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-12">Carrito de Compras</h1>
 
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Cart Items */}
@@ -55,7 +55,7 @@ export default function CartPage() {
                     <div>
                       <h3 className="font-semibold text-foreground text-lg">{item.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Size: {item.selectedSize} | Color: {item.selectedColor}
+                        Talla: {item.selectedSize} | Color: {item.selectedColor}
                       </p>
                     </div>
 
@@ -78,7 +78,7 @@ export default function CartPage() {
 
                       <div className="text-right space-y-1">
                         <p className="font-bold text-foreground">${(item.price * item.quantity).toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">${item.price} each</p>
+                        <p className="text-sm text-muted-foreground">${item.price} cada uno</p>
                       </div>
                     </div>
                   </div>
@@ -96,7 +96,7 @@ export default function CartPage() {
             {/* Summary */}
             <div>
               <Card className="sticky top-24 p-6 space-y-6">
-                <h2 className="text-xl font-bold text-foreground">Order Summary</h2>
+                <h2 className="text-xl font-bold text-foreground">Resumen del Pedido</h2>
 
                 <div className="space-y-4 border-b border-border pb-4">
                   <div className="flex justify-between text-sm">
@@ -104,8 +104,8 @@ export default function CartPage() {
                     <span className="font-medium">${cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">Free</span>
+                    <span className="text-muted-foreground">Envío</span>
+                    <span className="font-medium">Gratis</span>
                   </div>
                 </div>
 
@@ -115,17 +115,17 @@ export default function CartPage() {
                 </div>
 
                 <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-6 text-base">
-                  Proceed to Checkout
+                  Proceder a Checkout
                 </Button>
 
                 <Link href="/catalog">
                   <Button variant="outline" className="w-full bg-transparent">
-                    Continue Shopping
+                    Continuar Comprando
                   </Button>
                 </Link>
 
                 <button onClick={clearCart} className="w-full text-sm text-destructive hover:underline">
-                  Clear Cart
+                  Vaciar Carrito
                 </button>
               </Card>
             </div>
