@@ -3,11 +3,42 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { categories, products } from "@/lib/mock-data"
 import { ProductCard } from "@/components/product-card"
 import { ArrowRight } from "lucide-react"
+import { Product, Category } from "../lib/mock-data"
 
-export default function HomePage() {
+async function getProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch("http://localhost:3001/api/products", {
+      cache: "no-store" // Para obtener datos frescos en cada request
+    })
+    if (!res.ok) throw new Error("Failed to fetch products")
+    return res.json()
+  } catch (error) {
+    console.error("Error fetching products:", error)
+    return []
+  }
+}
+
+async function getCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch("http://localhost:3001/api/categories", {
+      cache: "no-store"
+    })
+    if (!res.ok) throw new Error("Failed to fetch categories")
+    return res.json()
+  } catch (error) {
+    console.error("Error fetching categories:", error)
+    return []
+  }
+}
+
+export default async function HomePage() {
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories()
+  ])
+
   const featuredProducts = products.slice(0, 4)
 
   return (
@@ -62,7 +93,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-4">
-              {categories.map((category) => (
+              {categories.map((category: Category) => (
                 <Link key={category.id} href={`/catalog?category=${category.slug}`}>
                   <Card className="group overflow-hidden cursor-pointer transition-all hover:shadow-lg">
                     <div className="relative h-64 overflow-hidden bg-muted">

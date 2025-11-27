@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { products } from "@/lib/mock-data"
+import { Product } from "@/lib/mock-data"
 import { Edit2, Trash2, Plus, X } from "lucide-react"
 
 interface ProductForm {
@@ -20,11 +20,15 @@ interface ProductForm {
   inStock: boolean
 }
 
+const API_URL = "http://localhost:3001/api"
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState("")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<ProductForm>({
     name: "",
     price: 0,
@@ -32,6 +36,28 @@ export default function AdminPage() {
     description: "",
     inStock: true,
   })
+
+  // Fetch products
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch(`${API_URL}/products`)
+      if (!res.ok) throw new Error("Failed to fetch products")
+      const data = await res.json()
+      setProducts(data)
+    } catch (error) {
+      console.error("Error fetching products:", error)
+      alert("Error al cargar productos")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProducts()
+    }
+  }, [isAuthenticated])
 
   // Simple password check (replace with real auth)
   const handleLogin = (e: React.FormEvent) => {
@@ -55,18 +81,75 @@ export default function AdminPage() {
     setShowForm(true)
   }
 
-  const handleSubmitForm = (e: React.FormEvent) => {
+  const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Ready for API POST request
-    console.log("Form data ready for API:", {
+
+    const productData = {
       ...formData,
       sizes: ["XS", "S", "M", "L", "XL"],
       colors: ["Black", "White"],
       image: "/placeholder.svg",
       rating: 4.5,
       reviews: 0,
-    })
-    setShowForm(false)
+    }
+
+    try {
+      setLoading(true)
+
+      if (editingId) {
+        // UPDATE
+        const res = await fetch(`${API_URL}/products/${editingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(productData),
+        })
+
+        if (!res.ok) throw new Error("Failed to update product")
+        alert("Producto actualizado exitosamente")
+      } else {
+        // CREATE
+        const res = await fetch(`${API_URL}/products`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(productData),
+        })
+
+        if (!res.ok) throw new Error("Failed to create product")
+        alert("Producto creado exitosamente")
+      }
+
+      setShowForm(false)
+      fetchProducts() // Reload products
+    } catch (error) {
+      console.error("Error saving product:", error)
+      alert("Error al guardar el producto")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("¿Estás seguro de eliminar este producto?")) return
+
+    try {
+      setLoading(true)
+      const res = await fetch(`${API_URL}/products/${id}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) throw new Error("Failed to delete product")
+      alert("Producto eliminado exitosamente")
+      fetchProducts() // Reload products
+    } catch (error) {
+      console.error("Error deleting product:", error)
+      alert("Error al eliminar el producto")
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!isAuthenticated) {
@@ -118,7 +201,11 @@ export default function AdminPage() {
 
           <div className="mb-8 flex justify-between items-center">
             <h2 className="text-2xl font-bold text-foreground">Productos</h2>
-            <Button onClick={handleAddProduct} className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button
+              onClick={handleAddProduct}
+              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              disabled={loading}
+            >
               <Plus className="h-5 w-5" />
               Añadir Producto
             </Button>
@@ -215,8 +302,12 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground">
-                    {editingId ? "Actualizar Producto" : "Crear Producto"}
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+                    disabled={loading}
+                  >
+                    {loading ? "Guardando..." : editingId ? "Actualizar Producto" : "Crear Producto"}
                   </Button>
                   <Button type="button" onClick={() => setShowForm(false)} variant="outline" className="flex-1">
                     Cancelar
@@ -227,65 +318,71 @@ export default function AdminPage() {
           )}
 
           {/* Products Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-card">
-                  <th className="text-left px-4 py-3 font-semibold text-foreground">Producto</th>
-                  <th className="text-left px-4 py-3 font-semibold text-foreground">Categoría</th>
-                  <th className="text-left px-4 py-3 font-semibold text-foreground">Precio</th>
-                  <th className="text-left px-4 py-3 font-semibold text-foreground">Estado</th>
-                  <th className="text-left px-4 py-3 font-semibold text-foreground">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} className="border-b border-border hover:bg-card">
-                    <td className="px-4 py-3 text-foreground font-medium">{product.name}</td>
-                    <td className="px-4 py-3 text-muted-foreground capitalize">{product.category}</td>
-                    <td className="px-4 py-3 text-foreground font-semibold">${product.price}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          product.inStock ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"
-                        }`}
-                      >
-                        {product.inStock ? "En Stock" : "Agotado"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditingId(product.id)
-                          setFormData({
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            category: product.category,
-                            description: product.description,
-                            inStock: product.inStock,
-                          })
-                          setShowForm(true)
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive bg-transparent"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
+          {loading && <p className="text-center text-muted-foreground">Cargando productos...</p>}
+
+          {!loading && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-card">
+                    <th className="text-left px-4 py-3 font-semibold text-foreground">Producto</th>
+                    <th className="text-left px-4 py-3 font-semibold text-foreground">Categoría</th>
+                    <th className="text-left px-4 py-3 font-semibold text-foreground">Precio</th>
+                    <th className="text-left px-4 py-3 font-semibold text-foreground">Estado</th>
+                    <th className="text-left px-4 py-3 font-semibold text-foreground">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.id} className="border-b border-border hover:bg-card">
+                      <td className="px-4 py-3 text-foreground font-medium">{product.name}</td>
+                      <td className="px-4 py-3 text-muted-foreground capitalize">{product.category}</td>
+                      <td className="px-4 py-3 text-foreground font-semibold">${product.price}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${product.inStock ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"
+                            }`}
+                        >
+                          {product.inStock ? "En Stock" : "Agotado"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingId(product.id)
+                            setFormData({
+                              id: product.id,
+                              name: product.name,
+                              price: product.price,
+                              originalPrice: product.originalPrice,
+                              category: product.category,
+                              description: product.description,
+                              inStock: product.inStock,
+                            })
+                            setShowForm(true)
+                          }}
+                          disabled={loading}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive bg-transparent"
+                          onClick={() => handleDeleteProduct(product.id)}
+                          disabled={loading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </main>
 
